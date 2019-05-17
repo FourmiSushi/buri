@@ -7,4 +7,5 @@ func main() {
 	args := os.Args[1:]
 
 	fmt.Println(args)
+	handler(args)
 }
