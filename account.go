@@ -6,6 +6,7 @@ import (
 	"io/ioutil"
 	"log"
 	"os"
+	"os/user"
 
 	"github.com/mrjones/oauth"
 )
@@ -49,12 +50,16 @@ func addAccount() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	file, err := os.OpenFile("~/.buritweet", os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
+	userDir, _ := user.Current()
+	path := userDir.HomeDir + "/.buritweet"
+	file, err := os.OpenFile(path, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
 	if err != nil {
 		log.Fatal(err)
 	}
 	defer file.Close()
 	fmt.Fprintln(file, string(b))
+	fmt.Printf("add: %s\n", _a.Screenname)
+	fmt.Println("success. You MUST NOT let anyone to see your ~/.buritweet .")
 }
 
 func removeAccount(argSlice []string) {
@@ -94,14 +99,17 @@ func authorize() (a access) {
 			AccessTokenUrl:    "https://api.twitter.com/oauth/access_token",
 		})
 	requestToken, url, err := consumer.GetRequestTokenAndUrl("oob")
+	if err != nil {
+		log.Fatal(err)
+	}
 	fmt.Println("open this url and enter the PIN code.")
 	fmt.Println(url)
-	fmt.Print("PIN >")
+	fmt.Print("PIN > ")
 	pin := ""
 	fmt.Scanln(&pin)
 	accessToken, err := consumer.AuthorizeToken(requestToken, pin)
 	if err != nil {
-		fmt.Println("(Authenticate faild.)")
+		fmt.Println("Authenticate failed.")
 		log.Fatal(err)
 	}
 
