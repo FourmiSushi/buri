@@ -22,7 +22,9 @@ type account struct {
 }
 
 func accountHandler(argSlice []string) {
-	fmt.Println(argSlice)
+	if len(argSlice) == 0 {
+		argSlice = append(argSlice, "help")
+	}
 	switch argSlice[0] {
 	case "add":
 		addAccount()
