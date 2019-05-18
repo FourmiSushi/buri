@@ -13,5 +13,9 @@ func main() {
 		userSetting = readSettings()
 	}
 
+	if len(args) == 0 {
+		args = append(args, "help")
+	}
+
 	handler(args)
 }

@@ -33,7 +33,7 @@ The commands are:
 	reset       delete all settings.
 	help        show this help.
 	
-Use "go <command> help" for more information about a command.
+Use "buri <command> help" for more information about a command.
 `)
 	fmt.Println("")
 }
