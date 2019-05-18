@@ -11,6 +11,8 @@ func main() {
 
 	if isSettingsExist() {
 		userSetting = readSettings()
+	} else {
+		createSettings()
 	}
 
 	if len(args) == 0 {

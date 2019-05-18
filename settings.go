@@ -37,7 +37,7 @@ func createSettings() {
 }
 
 func writeSettings(s setting) {
-	file, err := os.OpenFile(getSettingsPath(), os.O_WRONLY, 0666)
+	file, err := os.OpenFile(getSettingsPath(), os.O_WRONLY|os.O_TRUNC, 0666)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -61,7 +61,7 @@ func readSettings() (s setting) {
 	return _s
 }
 
-func resetSettings(){
+func resetSettings() {
 	file, err := os.OpenFile(getSettingsPath(), os.O_WRONLY, 0666)
 	if err != nil {
 		log.Fatal(err)

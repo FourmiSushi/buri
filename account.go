@@ -64,7 +64,13 @@ func removeAccount(argSlice []string) {
 	writeSettings(userSetting)
 
 	fmt.Println("default account has been reset.")
-	fmt.Printf("new default: %s\n", userSetting.Accounts[0].Screenname)
+	newDefault := ""
+	if len(userSetting.Accounts) == 0 {
+		newDefault = "No accounts."
+	} else {
+		newDefault = userSetting.Accounts[0].Screenname
+	}
+	fmt.Printf("new default: %s\n", newDefault)
 }
 
 func listAccount() {
