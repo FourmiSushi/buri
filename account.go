@@ -5,8 +5,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"log"
-	"os"
-	"os/user"
+	"strconv"
 
 	"github.com/mrjones/oauth"
 )
@@ -16,7 +15,7 @@ type keys struct {
 	ConsumerSecret string `json:"consumer_secret"`
 }
 
-type access struct {
+type account struct {
 	Screenname   string `json:"screen_name"`
 	AccessToken  string `json:"access_token"`
 	AccessSecret string `json:"access_secret"`
@@ -26,53 +25,72 @@ func accountHandler(argSlice []string) {
 	fmt.Println(argSlice)
 	switch argSlice[0] {
 	case "add":
-		fmt.Println("add")
 		addAccount()
 	case "remove":
-		fmt.Println("remove")
 		removeAccount(argSlice[1:])
 	case "list":
-		fmt.Println("list")
 		listAccount()
 	case "help":
-		fmt.Println("help")
-		helpAccount()
+		showAccountHelp()
 	default:
-		fmt.Println("invalid arguments")
-		helpAccount()
+		fmt.Println("invalid command.")
+		showAccountHelp()
 	}
 }
 
 func addAccount() {
-	fmt.Println("addAccount")
-	_a := authorize()
-	b, err := json.Marshal(_a)
-	if err != nil {
-		log.Fatal(err)
-	}
-	userDir, _ := user.Current()
-	path := userDir.HomeDir + "/.buritweet"
-	file, err := os.OpenFile(path, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
-	if err != nil {
-		log.Fatal(err)
-	}
-	defer file.Close()
-	fmt.Fprintln(file, string(b))
-	fmt.Printf("add: %s\n", _a.Screenname)
-	fmt.Println("success. You MUST NOT let anyone to see your ~/.buritweet .")
+	a := authorize()
+	userSetting.Accounts = append(userSetting.Accounts, a)
+	writeSettings(userSetting)
 }
 
 func removeAccount(argSlice []string) {
-	fmt.Println("removeAccount")
-	fmt.Println(argSlice)
+	removeNum, err := strconv.Atoi(argSlice[0])
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	var newAccounts []account
+	for i, s := range userSetting.Accounts {
+		if i != removeNum {
+			newAccounts = append(newAccounts, s)
+		}
+	}
+
+	userSetting.Accounts = newAccounts
+	userSetting.DefaultAccount = 0
+	writeSettings(userSetting)
+
+	fmt.Println("default account has been reset.")
+	fmt.Printf("new default: %s\n", userSetting.Accounts[0].Screenname)
 }
 
 func listAccount() {
-	fmt.Println("listAccount")
+	for i, s := range userSetting.Accounts {
+		if i != userSetting.DefaultAccount {
+			fmt.Printf("%d    @%s\n", i, s.Screenname)
+		} else {
+			fmt.Printf("%d   *@%s\n", i, s.Screenname)
+		}
+	}
 }
 
-func helpAccount() {
-	fmt.Println("helpAccount")
+func showAccountHelp() {
+	fmt.Print(
+		`account is account maintenance command.
+
+Usage:
+
+	buri account <command>
+
+The commands are:
+
+	add                         add new account.
+	remove <accountNumber>      remove an account from buri. 
+	list                        show all accounts.
+	help                        show this help.	
+`)
+	fmt.Println("")
 }
 
 func getKeys() (k keys) {
@@ -88,7 +106,7 @@ func getKeys() (k keys) {
 	return _k
 }
 
-func authorize() (a access) {
+func authorize() (a account) {
 	k := getKeys()
 	consumer := oauth.NewConsumer(
 		k.ConsumerKey,
@@ -98,15 +116,19 @@ func authorize() (a access) {
 			AuthorizeTokenUrl: "https://api.twitter.com/oauth/authorize",
 			AccessTokenUrl:    "https://api.twitter.com/oauth/access_token",
 		})
+
 	requestToken, url, err := consumer.GetRequestTokenAndUrl("oob")
 	if err != nil {
 		log.Fatal(err)
 	}
+
 	fmt.Println("open this url and enter the PIN code.")
 	fmt.Println(url)
 	fmt.Print("PIN > ")
+
 	pin := ""
 	fmt.Scanln(&pin)
+
 	accessToken, err := consumer.AuthorizeToken(requestToken, pin)
 	if err != nil {
 		fmt.Println("Authenticate failed.")

@@ -1,11 +1,17 @@
 package main
 
-import "os"
-import "fmt"
+import (
+	"os"
+)
+
+var userSetting setting
 
 func main() {
 	args := os.Args[1:]
 
-	fmt.Println(args)
+	if isSettingsExist() {
+		userSetting = readSettings()
+	}
+
 	handler(args)
 }
