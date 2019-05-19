@@ -7,7 +7,7 @@ func handler(argSlice []string) {
 	case "account":
 		accountHandler(argSlice[1:])
 	case "tweet":
-		fmt.Println("tweet")
+		tweetHandler(argSlice[1:])
 	case "reset":
 		resetSettings()
 	case "help":
